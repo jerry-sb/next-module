@@ -1,11 +1,12 @@
-import "server-only";
 import { initMessageGetter } from "./messeage";
+import { createRouteHandler, RouteHandler } from "./handler";
 
 export type LangType = "kr" | "en";
 
 export interface ClientInstanceOptions {
    hmacKey?: string;
-   lang: "kr" | "en";
+   timeout?: number;
+   lang: LangType;
    pagination: {
       pageIndex: string;
       pageSize: string;
@@ -16,6 +17,7 @@ export interface ClientInstanceOptions {
 
 const defaultOptions: ClientInstanceOptions = {
    lang: "kr",
+   timeout: 10 * 1000,
    pagination: {
       pageIndex: "pageIndex",
       pageSize: "pageSize",
@@ -31,21 +33,16 @@ export function createClient(options: ClientInstanceOptions) {
    initMessageGetter(_options.lang);
 }
 
-export function getOptions(): ClientInstanceOptions {
-   if (!_options) throw new Error("❌ API module client not found.");
-   return _options;
-}
+export function getClient<
+   TData = any,
+   P extends Record<string, string | string[]> = any,
+   S = any,
+   B = any,
+   E = any,
+>(): RouteHandler<TData, P, S, B, E> {
+   if (!_options) {
+      throw new Error("❌ API module client not found.");
+   }
 
-// export function getClient<
-//    T = any,
-//    P = any,
-//    S = any,
-//    B = any,
-//    E = any,
-// >(): RouteHandler<T, P, S, B, E> {
-//    if (!_options) {
-//       throw new Error("❌ API module client not found.");
-//    }
-//
-//    return createRouteHandler<T, P, S, B, E>(_options); // 초기 설정을 route-handler로 전달
-// }
+   return createRouteHandler<TData, P, S, B, E>(_options);
+}

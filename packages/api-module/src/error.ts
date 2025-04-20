@@ -1,123 +1,113 @@
 import { ZodError } from "zod";
 import { getMessage } from "./messeage";
 
-export enum ServerErrorType {
-   FETCH = "fetch",
-   SERVER_ACTION = "server-action",
-}
-
+// 베이스 서버 에러 (심플하게 유지)
 export class ServerError extends Error {
-   public type: ServerErrorType;
    public code: number;
-   public payload?: any;
-   public method?: string;
-   public url?: string;
 
-   constructor({
-      code,
-      message,
-      method,
-      url,
-      payload,
-   }: {
-      code: number;
-      message: string;
-      payload?: any;
-      method?: string;
-      url?: string;
-   }) {
+   constructor(code: number, message: string) {
       super(message);
       this.code = code;
-      this.payload = payload;
-
-      if (url) {
-         this.url = url;
-         this.method = method ?? "none";
-         this.type = ServerErrorType.FETCH;
-      } else {
-         this.method = method ?? "none";
-         this.type = ServerErrorType.SERVER_ACTION;
-      }
    }
 }
 
+// 각 상태코드별 에러 정의
 export class UnauthorizedError extends ServerError {
-   constructor(
-      args: Omit<
-         ConstructorParameters<typeof ServerError>[0],
-         "code" | "message"
-      >
-   ) {
-      super({ code: 401, message: getMessage("UNAUTHORIZED_ERROR"), ...args });
+   constructor(message = getMessage("UNAUTHORIZED_ERROR")) {
+      super(401, message);
    }
 }
 
 export class ForbiddenError extends ServerError {
-   constructor(
-      args: Omit<
-         ConstructorParameters<typeof ServerError>[0],
-         "code" | "message"
-      >
-   ) {
-      super({ code: 403, message: getMessage("FORBIDDEN_ERROR"), ...args });
+   constructor(message = getMessage("FORBIDDEN_ERROR")) {
+      super(403, message);
    }
 }
 
 export class ValidationError extends ServerError {
-   constructor(
-      args: Omit<
-         ConstructorParameters<typeof ServerError>[0],
-         "code" | "message"
-      >
-   ) {
-      super({ code: 400, message: getMessage("VALIDATION_ERROR"), ...args });
+   constructor(message = getMessage("VALIDATION_ERROR")) {
+      super(400, message);
    }
 }
 
 export class NotFoundError extends ServerError {
-   constructor(
-      args: Omit<
-         ConstructorParameters<typeof ServerError>[0],
-         "code" | "message"
-      >
-   ) {
-      super({ code: 404, message: getMessage("NOT_FOUND_ERROR"), ...args });
+   constructor(message = getMessage("NOT_FOUND_ERROR")) {
+      super(404, message);
    }
 }
 
 export class InternalServerError extends ServerError {
-   constructor(
-      args: Omit<
-         ConstructorParameters<typeof ServerError>[0],
-         "code" | "message"
-      >
-   ) {
-      super({ code: 500, message: getMessage("INTERNAL_ERROR"), ...args });
+   constructor(message = getMessage("INTERNAL_ERROR")) {
+      super(500, message);
    }
 }
 
 export class TimeoutError extends ServerError {
-   constructor(
-      args: Omit<
-         ConstructorParameters<typeof ServerError>[0],
-         "code" | "message"
-      >
-   ) {
-      super({ code: 408, message: getMessage("TIMEOUT_ERROR"), ...args });
+   constructor(message = getMessage("TIMEOUT_ERROR")) {
+      super(408, message);
    }
 }
 
-export function handleServerError<T extends Record<string, any>, D>(
+type ErrorMeta = {
+   url: string;
+   method: string;
+   body?: Record<string, any>;
+};
+
+export type ErrorResponse<T = ErrorMeta> = {
+   code: number;
+   message: string;
+   error: T;
+};
+
+type ErrorHandler<T = ErrorMeta> = (
    error: unknown,
-   payload?: T
-): ServerResponse<T, D> {
+   req: Request
+) => Promise<ErrorResponse<T>>;
+
+let globalErrorHandler: ErrorHandler<any> | undefined;
+
+export function setGlobalErrorHandler<T = ErrorMeta>(handler: ErrorHandler<T>) {
+   globalErrorHandler = handler;
+}
+
+export async function handleServerError(
+   error: unknown,
+   req: Request
+): Promise<ErrorResponse> {
+   const fallbackData: ErrorMeta = {
+      url: req.url,
+      method: req.method,
+   };
+
+   const parsedBody = await req.json().catch(() => undefined);
+   const data: ErrorMeta = {
+      ...fallbackData,
+      ...(parsedBody && typeof parsedBody === "object"
+         ? { body: parsedBody }
+         : {}),
+   };
+
+   if (globalErrorHandler) {
+      try {
+         return await globalErrorHandler(error, req);
+      } catch (e) {
+         console.error("💥 Global error handler failure", e);
+         return {
+            code: 500,
+            message: JSON.stringify(e),
+            error: data,
+         };
+      }
+   }
+
    console.error("[Server Error]", error);
 
    if (error instanceof ZodError) {
       return {
          code: 400,
          message: error.errors[0]?.message || getMessage("VALIDATION_ERROR"),
-         payload,
+         error: data,
       };
    }
 
@@ -125,13 +115,13 @@ export function handleServerError<T extends Record<string, any>, D>(
       return {
          code: error.code,
          message: error.message,
-         payload: error.payload,
+         error: data,
       };
    }
 
    return {
       code: 500,
       message: getMessage("UNKNOWN_ERROR"),
-      payload,
+      error: data,
    };
 }

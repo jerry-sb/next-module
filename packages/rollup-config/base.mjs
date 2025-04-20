@@ -26,6 +26,5 @@ export default function baseConfig(
         tsconfig: "./tsconfig.json",
       }),
     ],
-    external: ["react", "react-dom"],
   };
 }
