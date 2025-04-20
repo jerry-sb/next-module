@@ -1,0 +1,12 @@
+{
+  "extends": "@jerry-sb/typescript-config/base.json",
+  "compilerOptions": {
+    "paths": {
+      "baseUrl": "."
+    },
+    "outDir": "dist"
+  },
+
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "@jerry-sb/rollup-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "peerDependencies": {
+    "rollup": "^4.40.0",
+    "rollup-plugin-dts": "^6.2.1",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-typescript": "^12.1.2"
+  },
+  "devDependencies": {
+    "rollup": "^4.40.0",
+    "rollup-plugin-dts": "^6.2.1",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-typescript": "^12.1.2"
+  }
+}

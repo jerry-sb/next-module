@@ -1,0 +1,67 @@
+{
+  "name": "@jerry-sb/api-module",
+  "version": "0.1.0",
+  "license": "MIT",
+  "source": "./src/index.ts",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "publishConfig": {
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "import": {
+          "types": "./dist/index.d.mts",
+          "default": "./dist/index.mjs"
+        },
+        "require": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/index.js"
+        }
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "lint": "eslint --max-warnings 0 src",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest --config ./vitest.config.ts"
+  },
+  "devDependencies": {
+    "zod": "^3.24.3",
+    "next": "^14.0.0",
+    "@jerry-sb/eslint-config": "workspace:*",
+    "@jerry-sb/typescript-config": "workspace:*",
+    "vitest": "3.1.1"
+  },
+  "peerDependencies": {
+    "zod": "^3.24.3",
+    "next": ">=13.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "homepage": "https://radix-ui.com/primitives",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/radix-ui/primitives.git"
+  },
+  "bugs": {
+    "url": "https://github.com/radix-ui/primitives/issues"
+  },
+  "prettier": {
+    "arrowParens": "always",
+    "semi": true,
+    "singleQuote": false,
+    "tabWidth": 3,
+    "trailingComma": "es5",
+    "bracketSameLine": true
+  }
+}
