@@ -2,9 +2,11 @@
   "extends": "@jerry-sb/typescript-config/base.json",
   "compilerOptions": {
     "paths": {
-      "baseUrl": "."
+      "baseUrl": "./src"
     },
-    "outDir": "dist"
+    "outDir": "dist",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
 
   "include": ["src"],

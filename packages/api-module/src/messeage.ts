@@ -12,6 +12,7 @@ const MESSAGES = {
       UPDATE_NO_BODY_ERROR: "업데이트할 데이터가 없습니다.",
       UNIQUE_ERROR: "이미 존재하는 고유값입니다.",
       TIMEOUT_ERROR: "서버 응답이 없습니다.",
+      SIGNATURE_ERROR: "시그니처 검증에 실패했습니다.",
    },
    en: {
       INTERNAL_ERROR: "Internal server error occurred.",
@@ -24,8 +25,10 @@ const MESSAGES = {
       UPDATE_NO_BODY_ERROR: "No update data provided.",
       UNIQUE_ERROR: "Unique constraint violated.",
       TIMEOUT_ERROR: "Server response timed out.",
+      SIGNATURE_ERROR: "Signature validation failed.",
    },
-};
+   fn: {},
+} as const;
 
 export type MessageKey = keyof (typeof MESSAGES)["kr"];
 

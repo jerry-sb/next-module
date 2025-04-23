@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { z } from "zod";
-import { createRouteHandler, PaginationParams } from "../src/handler";
+import { createRouteHandler, PaginationParams } from "../src";
 import { NextRequest } from "next/server";
-import { ClientInstanceOptions } from "../src/client";
+import { ClientInstanceOptions } from "../src";
 
 const mockOptions: ClientInstanceOptions = {
    lang: "kr",
@@ -153,7 +153,7 @@ describe("createRouteHandler", () => {
          params: Promise.resolve({}),
       });
 
-      expect(res.status).toBe(400); // 유효성 검증 실패
+      expect(res.status).toBe(400);
    });
 
    it("query 유효성 검증 실패 시 400 에러를 반환해야 한다", async () => {
@@ -173,7 +173,7 @@ describe("createRouteHandler", () => {
 
       expect(res.status).toBe(400);
       const json = await res.json();
-      expect(json.message).toBeDefined(); // "too short" 등 메시지 확인
+      expect(json.message).toBeDefined();
    });
 
    it("핸들러 내부 오류 발생 시 500 에러를 반환해야 한다", async () => {
@@ -189,7 +189,7 @@ describe("createRouteHandler", () => {
       expect(res.status).toBe(500);
 
       const json = await res.json();
-      expect(json.message).toBeDefined(); // 에러 메시지 확인
-      expect(json.code).toBe(500); // 500 코드 반환 확인
+      expect(json.message).toBeDefined();
+      expect(json.code).toBe(500);
    });
 });

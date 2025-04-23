@@ -1,6 +1,16 @@
+/**
+ * @file handler.ts
+ * @author 심명보 (https://github.com/jerry-sb)
+ * @description Next.js App Router를 위한 타입 안전한 Route 핸들러 빌더
+ * @created 2025-04-22
+ *
+ * 이 모듈은 미들웨어 체이닝과 Zod 기반의 유효성 검사를 지원하며,
+ * 서버 핸들러를 선언적으로 정의할 수 있게 도와줍니다.
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { handleServerError, TimeoutError } from "./error";
+import { handleServerError } from "./error";
 import { ClientInstanceOptions } from "./client";
 
 export type Response<T> = NextResponse<{
@@ -35,18 +45,45 @@ export type Middleware<TData, P, S, B, E> = (
 export interface RouteHandler<TData, P, S, B, E> {
    middlewares: Middleware<TData, P, S, B, E>[];
 
+   /**
+    * 요청의 body를 zod 스키마로 검증하는 미들웨어를 등록합니다.
+    * 이 미들웨어를 사용하면 `context.body`에 검증된 데이터를 안전하게 사용할 수 있습니다.
+    *
+    * @param schema - zod 스키마 객체
+    * @returns 새로운 RouteHandler 인스턴스
+    */
    verifyBody: <Schema extends z.ZodType<any, any>>(
       schema: Schema
    ) => RouteHandler<TData, P, S, B & { body: z.infer<Schema> }, E>;
 
+   /**
+    * 동적 라우트의 params를 zod 스키마로 검증하는 미들웨어를 등록합니다.
+    * 이 미들웨어를 사용하면 `context.params`에 타입 안전한 params가 주입됩니다.
+    *
+    * @param schema - zod 스키마 객체
+    * @returns 새로운 RouteHandler 인스턴스
+    */
    verifyParams: <Schema extends z.ZodType<any, any>>(
       schema: Schema
    ) => RouteHandler<TData, z.infer<Schema>, S, B, E>;
 
+   /**
+    * 쿼리 파라미터를 zod 스키마로 검증하는 미들웨어를 등록합니다.
+    * 이 미들웨어를 사용하면 `context.query`를 통해 안전하게 사용할 수 있습니다.
+    *
+    * @param schema - zod 스키마 객체
+    * @returns 새로운 RouteHandler 인스턴스
+    */
    verifyQuery: <Schema extends z.ZodType<any, any>>(
       schema: Schema
    ) => RouteHandler<TData, P, S, B, E & { query: z.infer<Schema> }>;
 
+   /**
+    * 페이지네이션 관련 쿼리 파라미터(`pageIndex`, `pageSize`, `sortBy`, `sortOrder`)를 자동으로 처리하는 미들웨어를 등록합니다.
+    * 해당 값은 `context.pagination`으로 전달됩니다.
+    *
+    * @returns 새로운 RouteHandler 인스턴스
+    */
    pagination: () => RouteHandler<
       TData,
       P,
@@ -55,6 +92,13 @@ export interface RouteHandler<TData, P, S, B, E> {
       E & { pagination: PaginationParams }
    >;
 
+   /**
+    * 요청을 최종 처리하는 handler 함수를 정의합니다.
+    * 등록된 모든 미들웨어를 순차적으로 실행하고, 마지막에 해당 handler가 실행됩니다.
+    *
+    * @param handler - 최종 핸들러 함수
+    * @returns Next.js App Router용 핸들러 함수
+    */
    handle: (
       handler: (
          req: NextRequest,
